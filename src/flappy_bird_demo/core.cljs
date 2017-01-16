@@ -23,9 +23,12 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 158) ;; 158
+(def pillar-gap 200) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
+
+(def flap-ampl 30)
+(def flap-period 300)
 
 (def starting-state { :run-game? true
                      :initialized? true
@@ -38,8 +41,8 @@
                       :pillar-offset-x 900
                       :pillar-idx 1
                       :pillar-list
-                      [{ :idx 0
-                         :gap-top 200 }]})
+                      [{:idx 0
+                        :gap-multiplier 0.5}]})
 
 (defn reset-state [_ cur-time]
   (-> starting-state
@@ -81,7 +84,14 @@
 
 (defn new-pillar [idx]
   {:idx idx
-   :gap-top    (+ 60 (rand-int (- bottom-y 120 pillar-gap)))})
+   :gap-multiplier (rand)})
+   ;:gap-top    (+ 60 (rand-int (- bottom-y 120 pillar-gap)))})
+
+(defn calc-pillars-gap [pillars]
+  (map #(assoc % :gap-top
+               (+ 60
+                  (floor (* (:gap-multiplier %) (- bottom-y 120 pillar-gap)))))
+       pillars))
 
 (defn calc-pillars-pos [time-delta pillars]
   (map (fn [{:keys [idx] :as  pl}]
@@ -112,7 +122,7 @@
 (defn sine-wave [st]
   (assoc st
     :flappy-y
-    (+ start-y (* 30 (.sin js/Math (/ (:time-delta st) 300))))))
+    (+ start-y (* flap-ampl (.sin js/Math (/ (:time-delta st) flap-period))))))
 
 (defn update-flappy [{:keys [time-delta initial-vel flappy-y jump-count] :as st}]
   (if (pos? jump-count)
@@ -139,13 +149,14 @@
           :start-time-delta (- timestamp (:start-time state)))
       update-flappy
       update-pillars
-      (update-in [:pillar-list] #(calc-pillars-pos (:start-time-delta state) %))
+      (update :pillar-list (partial calc-pillars-pos (:start-time-delta state)))
+      (update :pillar-list calc-pillars-gap)
       collision?
       score))
 
 (defn jump [{:keys [cur-time jump-count] :as state}]
-  (-> state
-      (assoc
+    (-> state
+        (assoc
           :jump-count (inc jump-count)
           :flappy-start-time cur-time
           :initial-vel jump-vel)))
@@ -169,6 +180,8 @@
 (defn world [state]
   (-> state
       border
+      (update :pillar-list (partial calc-pillars-pos (:start-time-delta state)))
+      (update :pillar-list calc-pillars-gap)
       pillar-offsets))
 
 (defn px [n] (str n "px"))
@@ -206,7 +219,7 @@
                [:a.start-button {:onClick #(start-game)}
                 (if (< 1 jump-count) "RESTART" "START")]
                [:span])
-             [:div (map pillar (calc-pillars-pos start-time-delta pillar-list))]
+             [:div (map pillar pillar-list)]
              [:div.flappy {:style {:top (px flappy-y)}}]
              [:div.scrolling-border {:style { :background-position-x (px border-pos)}}]]))
 
