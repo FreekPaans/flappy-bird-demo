@@ -48,6 +48,13 @@
           :flappy-start-time cur-time
           :timer-running true)))
 
+(defn shift-time [state time-shift]
+  (-> state
+    (update-in [:pillar-list] (fn [pls]
+                                (map #(update % :start-time + time-shift) pls)))
+    (update :start-time + time-shift)
+    (update :flappy-start-time + time-shift)))
+
 (defonce flap-state (atom (assoc starting-state ;:run-game? false
                                  :initialized? false)))
 
@@ -206,7 +213,12 @@
 (add-watch flap-state :pause-handle
            (fn [_ _ {paused-old? :paused?} {paused-new? :paused?}]
              (when (and paused-old? (not paused-new?))
-               (start-game))))
+               (.requestAnimationFrame
+                 js/window
+                 (fn [time]
+                   (let[pause-delta (- time paused-old?)]
+                     (swap! flap-state shift-time pause-delta)
+                     (time-loop time)))))))
 
 (defn handle-key-down [event]
   (case (.-key event)
