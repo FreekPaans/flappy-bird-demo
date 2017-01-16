@@ -3,7 +3,8 @@
    [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true]
-   [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
+   [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]]
+   [flappy-bird-demo.repl-demo])
   (:require-macros
    [cljs.core.async.macros :refer [go-loop go]]))
 
