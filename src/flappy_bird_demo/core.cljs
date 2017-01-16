@@ -25,6 +25,7 @@
 (def pillar-spacing 324)
 (def pillar-gap 158) ;; 158
 (def pillar-width 86)
+(def pillar-offset-x 900)
 
 (def starting-state { :run-game? true
                      :initialized? true
@@ -34,6 +35,8 @@
                       :start-time 0
                       :flappy-start-time 0
                       :flappy-y   start-y
+                      :pillar-offset-x 900
+                      :pillar-idx 1
                       :pillar-list
                       [{ :start-time 0
                          :pos-x 900
@@ -58,8 +61,8 @@
 (defonce flap-state (atom (assoc starting-state ;:run-game? false
                                  :initialized? false)))
 
-(defn curr-pillar-pos [cur-time {:keys [pos-x start-time] }]
-  (translate pos-x horiz-vel (- cur-time start-time)))
+;(defn curr-pillar-pos [pos-x cur-time {:keys [start-time] }]
+  ;(translate pos-x horiz-vel (- cur-time start-time)))
 
 (defn in-pillar? [{:keys [cur-x]}]
   (and (>= (+ flappy-x flappy-width)
@@ -81,26 +84,38 @@
     (assoc st :timer-running false)
     st))
 
-(defn new-pillar [cur-time pos-x]
-  {:start-time cur-time
-   :pos-x      pos-x
-   :cur-x      pos-x
+(defn new-pillar [idx]
+  {:idx idx
    :gap-top    (+ 60 (rand-int (- bottom-y 120 pillar-gap)))})
 
-(defn update-pillars [{:keys [pillar-list cur-time] :as st}]
-  (let [pillars-with-pos (map #(assoc % :cur-x (curr-pillar-pos cur-time %)) pillar-list)
+(defn calc-pillars-pos [time-delta pillars]
+  (map (fn [{:keys [idx] :as  pl}]
+         (assoc pl :cur-x
+                (+ pillar-offset-x
+                   (* pillar-spacing idx)
+                   (* horiz-vel time-delta)))) pillars))
+                ;(curr-pillar-pos
+                  ;(+ pillar-offset-x
+                     ;(* pillar-spacing
+                        ;idx))
+                  ;cur-time pl))) pillars))
+
+(defn update-pillars [{:keys [pillar-list time-delta pillar-idx] :as st}]
+  (let [pillars-with-pos (calc-pillars-pos time-delta pillar-list)
         pillars-in-world (sort-by
                           :cur-x
-                          (filter #(> (:cur-x %) (- pillar-width)) pillars-with-pos))]
-    (assoc st
+                          (filter #(> (:cur-x %) (- pillar-width)) pillars-with-pos))
+        new-pillar? (< (count pillars-in-world) 3)]
+
+    (assoc
+      st
       :pillar-list
-      (if (< (count pillars-in-world) 3)
-        (conj pillars-in-world
-              (new-pillar
-               cur-time
-               (+ pillar-spacing
-                  (:cur-x (last pillars-in-world)))))
-        pillars-in-world))))
+      (if new-pillar?
+        (do (println "adding new one")
+            (conj pillars-in-world
+                  (new-pillar pillar-idx)))
+        pillars-in-world)
+      :pillar-idx (if new-pillar? (inc pillar-idx) pillar-idx))))
 
 (defn sine-wave [st]
   (assoc st
@@ -131,7 +146,8 @@
           :time-delta (- timestamp (:flappy-start-time state)))
       update-flappy
       update-pillars
-      collision?
+      (update-in [:pillar-list] #(calc-pillars-pos (:time-delta state) %))
+      ;collision?
       score))
 
 (defn jump [{:keys [cur-time jump-count] :as state}]
