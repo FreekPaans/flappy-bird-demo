@@ -32,3 +32,4 @@ pom.xml.asc
 .Trashes
 ehthumbs.db
 Thumbs.db
+/.cljs_rhino_repl/
