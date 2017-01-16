@@ -13,7 +13,8 @@
 
   :plugins [[lein-cljsbuild "1.1.4"
              :exclusions [org.clojure/clojure]]
-            [lein-figwheel "0.5.8"]]
+            [lein-figwheel "0.5.8"]
+            [cider/cider-nrepl "0.14.0"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/out"
                                     "resources/public/js/flappy_bird_demo.js"
