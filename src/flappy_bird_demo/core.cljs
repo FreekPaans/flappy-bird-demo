@@ -106,14 +106,11 @@
                           :cur-x
                           (filter #(> (:cur-x %) (- pillar-width)) pillars-with-pos))
         new-pillar? (< (count pillars-in-world) 3)]
-
     (assoc
       st
       :pillar-list
       (if new-pillar?
-        (do (println "adding new one")
-            (conj pillars-in-world
-                  (new-pillar pillar-idx)))
+        (conj pillars-in-world (new-pillar pillar-idx))
         pillars-in-world)
       :pillar-idx (if new-pillar? (inc pillar-idx) pillar-idx))))
 
@@ -180,8 +177,8 @@
 
 (defn px [n] (str n "px"))
 
-(defn pillar [{:keys [cur-x pos-x upper-height lower-height]}]
-  [:div.pillars
+(defn pillar [{:keys [idx cur-x upper-height lower-height]}]
+  [:div.pillars {:key  idx}
    [:div.pillar.pillar-upper {:style {:left (px cur-x)
                                        :height upper-height}}]
    [:div.pillar.pillar-lower {:style {:left (px cur-x)
