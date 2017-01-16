@@ -181,7 +181,7 @@
                              flappy-y pillar-list]}]
   (sab/html [:div.board { :onMouseDown (fn [e]
                                          (swap! flap-state jump)
-                                         (.preventDefault e))}
+                                         (.preventDefault e)) }
              [:h1.score score]
              (if-not timer-running
                [:a.start-button {:onClick #(start-game)}
@@ -190,6 +190,27 @@
              [:div (map pillar pillar-list)]
              [:div.flappy {:style {:top (px flappy-y)}}]
              [:div.scrolling-border {:style { :background-position-x (px border-pos)}}]]))
+
+(defn toggle-pause []
+  (println "pausing")
+  (swap! flap-state (fn [{:keys [paused?] :as s}]
+                      (assoc s :paused? (not paused?)))))
+
+(defn handle-key-down [event]
+  (case (.-key event)
+        "p" (toggle-pause)
+        nil))
+
+(when-not (:initialized? @flap-state)
+  (let [body (.-body js/document)]
+    (.addEventListener body "keydown" #(handle-key-down %)))
+  (swap! flap-state assoc :initialized? true))
+
+(defn run-game! []
+  (swap! flap-state assoc :run-game? true))
+
+(defn stop-game! []
+  (swap! flap-state assoc :run-game? false))
 
 (let [node (.getElementById js/document "board-area")]
   (defn renderer [full-state]
@@ -202,12 +223,5 @@
                                     (renderer (world n))
                                     (clear-ui))))
 
-(defn run-game! []
-  (swap! flap-state assoc :run-game? true))
-
-(defn stop-game! []
-  (swap! flap-state assoc :run-game? false))
 
 (reset! flap-state @flap-state)
-
-(println "hello")
