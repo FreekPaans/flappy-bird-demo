@@ -23,14 +23,14 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 200) ;; 158
+(def pillar-gap 158) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
 
 (def flap-ampl 30)
 (def flap-period 300)
 
-(def starting-state { :run-game? true
+(def starting-state { 
                      :initialized? true
                       :timer-running false
                       :jump-count 0
@@ -56,7 +56,7 @@
     (update :start-time + time-shift)
     (update :flappy-start-time + time-shift)))
 
-(defonce flap-state (atom (assoc starting-state ;:run-game? false
+(defonce flap-state (atom (assoc starting-state
                                  :initialized? false)))
 
 ;(defn curr-pillar-pos [pos-x cur-time {:keys [start-time] }]
@@ -253,12 +253,6 @@
     (.addEventListener body "keydown" #(handle-key-down %)))
   (swap! flap-state assoc :initialized? true))
 
-(defn run-game! []
-  (swap! flap-state assoc :run-game? true))
-
-(defn stop-game! []
-  (swap! flap-state assoc :run-game? false))
-
 (let [node (.getElementById js/document "board-area")]
   (defn renderer [full-state]
     (.render js/ReactDOM (main-template full-state) node))
@@ -266,8 +260,6 @@
     (.render js/ReactDOM (sab/html [:div]) node)))
 
 (add-watch flap-state :renderer (fn [_ _ _ n]
-                                  (if (:run-game? n)
-                                    (renderer (world n))
-                                    (clear-ui))))
+                                  (renderer (world n))))
 
 (reset! flap-state @flap-state)

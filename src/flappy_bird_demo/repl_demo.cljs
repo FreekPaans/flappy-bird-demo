@@ -1,9 +1,14 @@
 (ns flappy-bird-demo.repl-demo
-  (:require [flappy-bird-demo.core :refer [run-game! stop-game!]]))
+  (:require ))
 
 (comment
-  (stop-game!)
+  (def body (aget js/document "body"))
 
-  (start-game!)
+  (def an-animal (.createElement js/document "div"))
 
-  (println "hello world1"))
+  (aset an-animal "className" "flappy")
+
+
+  (.appendChild body an-animal)
+
+  )
