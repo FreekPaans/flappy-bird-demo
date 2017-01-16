@@ -13,7 +13,7 @@
 
   :plugins [[lein-cljsbuild "1.1.4"
              :exclusions [org.clojure/clojure]]
-            [lein-figwheel "0.5.4-7"]]
+            [lein-figwheel "0.5.8"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/out"
                                     "resources/public/js/flappy_bird_demo.js"
@@ -32,6 +32,14 @@
                          :output-dir "resources/public/js/out"
                          :source-map-timestamp true}}]}
 
-  :figwheel { :css-dirs ["resources/public/css"]
-              :open-file-command "emacsclient"
-             })
+  :figwheel { :css-dirs ["resources/public/css"]}
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.8.2"]
+                                  [figwheel-sidecar "0.5.8"]
+                                  [com.cemerick/piggieback "0.2.1"]]
+                   ;; need to add dev source path here to get user.clj loaded
+                   :source-paths ["src" "dev"]
+                   ;; for CIDER
+                   ;; :plugins [[cider/cider-nrepl "0.12.0"]]
+                   :repl-options {; for nREPL dev you really need to limit output
+                                  :init (set! *print-length* 50)
+                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}})

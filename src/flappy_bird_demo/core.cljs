@@ -26,7 +26,8 @@
 (def pillar-gap 158) ;; 158
 (def pillar-width 86)
 
-(def starting-state { :timer-running false
+(def starting-state { :run-game? true
+                      :timer-running false
                       :jump-count 0
                       :initial-vel 0
                       :start-time 0
@@ -46,7 +47,7 @@
           :flappy-start-time cur-time
           :timer-running true)))
 
-(defonce flap-state (atom starting-state))
+(defonce flap-state (atom (assoc starting-state :run-game? false)))
 
 (defn curr-pillar-pos [cur-time {:keys [pos-x start-time] }]
   (translate pos-x horiz-vel (- cur-time start-time)))
@@ -192,9 +193,21 @@
 
 (let [node (.getElementById js/document "board-area")]
   (defn renderer [full-state]
-    (.render js/ReactDOM (main-template full-state) node)))
+    (.render js/ReactDOM (main-template full-state) node))
+  (defn clear-ui []
+    (.render js/ReactDOM (sab/html [:div]) node)))
 
 (add-watch flap-state :renderer (fn [_ _ _ n]
-                                  (renderer (world n))))
+                                  (if (:run-game? n)
+                                    (renderer (world n))
+                                    (clear-ui))))
+
+(defn run-game! []
+  (swap! flap-state assoc :run-game? true))
+
+(defn stop-game! []
+  (swap! flap-state assoc :run-game? false))
 
 (reset! flap-state @flap-state)
+
+(println "hello")
