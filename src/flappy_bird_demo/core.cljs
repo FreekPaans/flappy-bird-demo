@@ -38,14 +38,11 @@
                       :pillar-offset-x 900
                       :pillar-idx 1
                       :pillar-list
-                      [{ :start-time 0
-                         :pos-x 900
-                         :cur-x 900
+                      [{ :idx 0
                          :gap-top 200 }]})
 
 (defn reset-state [_ cur-time]
   (-> starting-state
-      (update-in [:pillar-list] (fn [pls] (map #(assoc % :start-time cur-time) pls)))
       (assoc
           :start-time cur-time
           :flappy-start-time cur-time
@@ -53,8 +50,6 @@
 
 (defn shift-time [state time-shift]
   (-> state
-    (update-in [:pillar-list] (fn [pls]
-                                (map #(update % :start-time + time-shift) pls)))
     (update :start-time + time-shift)
     (update :flappy-start-time + time-shift)))
 
@@ -100,8 +95,8 @@
                         ;idx))
                   ;cur-time pl))) pillars))
 
-(defn update-pillars [{:keys [pillar-list time-delta pillar-idx] :as st}]
-  (let [pillars-with-pos (calc-pillars-pos time-delta pillar-list)
+(defn update-pillars [{:keys [pillar-list start-time-delta pillar-idx] :as st}]
+  (let [pillars-with-pos (calc-pillars-pos start-time-delta pillar-list)
         pillars-in-world (sort-by
                           :cur-x
                           (filter #(> (:cur-x %) (- pillar-width)) pillars-with-pos))
@@ -140,11 +135,12 @@
   (-> state
       (assoc
           :cur-time timestamp
-          :time-delta (- timestamp (:flappy-start-time state)))
+          :time-delta (- timestamp (:flappy-start-time state))
+          :start-time-delta (- timestamp (:start-time state)))
       update-flappy
       update-pillars
-      (update-in [:pillar-list] #(calc-pillars-pos (:time-delta state) %))
-      ;collision?
+      (update-in [:pillar-list] #(calc-pillars-pos (:start-time-delta state) %))
+      collision?
       score))
 
 (defn jump [{:keys [cur-time jump-count] :as state}]
@@ -201,7 +197,7 @@
 
 (defn main-template [{:keys [score cur-time jump-count
                              timer-running border-pos
-                             flappy-y pillar-list]}]
+                             flappy-y pillar-list start-time-delta]}]
   (sab/html [:div.board { :onMouseDown (fn [e]
                                          (swap! flap-state jump)
                                          (.preventDefault e)) }
@@ -210,7 +206,7 @@
                [:a.start-button {:onClick #(start-game)}
                 (if (< 1 jump-count) "RESTART" "START")]
                [:span])
-             [:div (map pillar pillar-list)]
+             [:div (map pillar (calc-pillars-pos start-time-delta pillar-list))]
              [:div.flappy {:style {:top (px flappy-y)}}]
              [:div.scrolling-border {:style { :background-position-x (px border-pos)}}]]))
 
