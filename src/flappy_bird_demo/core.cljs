@@ -27,6 +27,7 @@
 (def pillar-width 86)
 
 (def starting-state { :run-game? true
+                     :initialized? true
                       :timer-running false
                       :jump-count 0
                       :initial-vel 0
@@ -47,7 +48,8 @@
           :flappy-start-time cur-time
           :timer-running true)))
 
-(defonce flap-state (atom (assoc starting-state :run-game? false)))
+(defonce flap-state (atom (assoc starting-state ;:run-game? false
+                                 :initialized? false)))
 
 (defn curr-pillar-pos [cur-time {:keys [pos-x start-time] }]
   (translate pos-x horiz-vel (- cur-time start-time)))
@@ -163,11 +165,12 @@
                                        :height lower-height}}]])
 
 (defn time-loop [time]
-  (let [new-state (swap! flap-state (partial time-update time))]
-    (when (:timer-running new-state)
-      (go
-       (<! (timeout 30))
-       (.requestAnimationFrame js/window time-loop)))))
+  (when-not (:paused? @flap-state)
+    (let [new-state (swap! flap-state (partial time-update time))]
+      (when (:timer-running new-state)
+        (go
+          (<! (timeout 30))
+          (.requestAnimationFrame js/window time-loop))))))
 
 (defn start-game []
   (.requestAnimationFrame
@@ -193,8 +196,17 @@
 
 (defn toggle-pause []
   (println "pausing")
-  (swap! flap-state (fn [{:keys [paused?] :as s}]
-                      (assoc s :paused? (not paused?)))))
+  (.requestAnimationFrame
+    js/window
+    (fn [time]
+      (swap! flap-state
+             (fn [{:keys [paused?] :as s}]
+                      (assoc s :paused? (if paused? nil time)))))))
+
+(add-watch flap-state :pause-handle
+           (fn [_ _ {paused-old? :paused?} {paused-new? :paused?}]
+             (when (and paused-old? (not paused-new?))
+               (start-game))))
 
 (defn handle-key-down [event]
   (case (.-key event)
@@ -202,6 +214,7 @@
         nil))
 
 (when-not (:initialized? @flap-state)
+  (println "binding keydown")
   (let [body (.-body js/document)]
     (.addEventListener body "keydown" #(handle-key-down %)))
   (swap! flap-state assoc :initialized? true))
@@ -222,6 +235,5 @@
                                   (if (:run-game? n)
                                     (renderer (world n))
                                     (clear-ui))))
-
 
 (reset! flap-state @flap-state)
