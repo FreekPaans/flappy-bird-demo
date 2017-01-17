@@ -211,9 +211,7 @@
 (defn main-template [{:keys [score cur-time jump-count
                              timer-running border-pos
                              flappy-y pillar-list start-time-delta]}]
-  (sab/html [:div.board { :onMouseDown (fn [e]
-                                         (swap! flap-state jump)
-                                         (.preventDefault e)) }
+  (sab/html [:div.board {}
              [:h1.score score]
              (if-not timer-running
                [:a.start-button {:onClick #(start-game)}
@@ -244,8 +242,13 @@
 
 (defn handle-key-down [event]
   (case (.-key event)
-        "p" (toggle-pause)
-        nil))
+    " " (do
+          (.preventDefault event)
+          (if (:timer-running @flap-state)
+            (swap! flap-state jump)
+            (start-game)))
+    "p" (toggle-pause)
+    nil))
 
 (when-not (:initialized? @flap-state)
   (println "binding keydown")
