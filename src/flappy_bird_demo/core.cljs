@@ -23,7 +23,7 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 250) ;; 158
+(def pillar-gap 300) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
 
@@ -193,7 +193,7 @@
 (defn pillar [{:keys [idx cur-x upper-height lower-height]}]
   [:div.pillars {:key  idx}
    [:div.pillar.pillar-upper {:style {:left (px cur-x)
-                                       :height upper-height}}]
+                                       :height (px upper-height)}}]
    [:div.pillar.pillar-lower {:style {:left (px cur-x)
                                        :height lower-height}}]])
 
