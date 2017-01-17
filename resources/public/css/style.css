@@ -93,3 +93,21 @@ body {
         margin: 0px;
     }
 }
+
+#time-travel {
+  position: absolute;
+  left: 120px;
+  bottom: 50px;
+  background-color: white;
+  padding: 20px;
+  width: 200px;
+  border-right: 2px solid black;
+  border-bottom: 2px solid black;
+}
+
+#time-travel input {
+  width: 100%;
+}
+
+
+

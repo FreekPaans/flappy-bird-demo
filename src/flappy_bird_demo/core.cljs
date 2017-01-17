@@ -59,6 +59,8 @@
 (defonce flap-state (atom (assoc starting-state
                                  :initialized? false)))
 
+(defonce state-history (atom []))
+
 ;(defn curr-pillar-pos [pos-x cur-time {:keys [start-time] }]
   ;(translate pos-x horiz-vel (- cur-time start-time)))
 
@@ -205,12 +207,27 @@
   (.requestAnimationFrame
    js/window
    (fn [time]
+     (reset! state-history [])
      (reset! flap-state (reset-state @flap-state time))
      (time-loop time))))
 
+(declare renderer)
+
+(defn time-travel-on-change [ev]
+  (let [value (.. ev -target -value)
+        state-history-count (count @state-history)
+        frame-instance (floor (* (/ value 100) (- state-history-count 1)))
+        state (get @state-history frame-instance)]
+    ;(. js/console log "switching to" frame-instance)
+    ;(println state)
+    (renderer (world (assoc state :show-time-travel? true)))))
+
+
+
 (defn main-template [{:keys [score cur-time jump-count
                              timer-running border-pos
-                             flappy-y pillar-list start-time-delta]}]
+                             flappy-y pillar-list start-time-delta
+                             show-time-travel?]}]
   (sab/html [:div.board {}
              [:h1.score score]
              (if-not timer-running
@@ -219,16 +236,26 @@
                [:span])
              [:div (map pillar pillar-list)]
              [:div.flappy {:style {:top (px flappy-y)}}]
-             [:div.scrolling-border {:style { :background-position-x (px border-pos)}}]]))
+             [:div.scrolling-border {:style { :background-position-x (px border-pos)}}]
+             (when show-time-travel?
+               [:div#time-travel [:input {:type "range"
+                                          :min 0
+                                          :max 100
+                                          :defaultValue 100
+                                          :on-change time-travel-on-change}]])]))
 
 (defn toggle-pause []
-  (println "pausing")
   (.requestAnimationFrame
     js/window
     (fn [time]
       (swap! flap-state
              (fn [{:keys [paused?] :as s}]
                       (assoc s :paused? (if paused? nil time)))))))
+
+(defn toggle-time-travel []
+  (swap! flap-state
+         (fn [{:keys [show-time-travel?] :as s}]
+           (assoc s :show-time-travel? (if show-time-travel? nil true)))))
 
 (add-watch flap-state :pause-handle
            (fn [_ _ {paused-old? :paused?} {paused-new? :paused?}]
@@ -253,6 +280,7 @@
             ;(swap! flap-state jump)
             ;(start-game)))
     "p" (toggle-pause)
+    "q" (toggle-time-travel)
     nil))
 
 (when-not (:initialized? @flap-state)
@@ -269,5 +297,30 @@
 
 (add-watch flap-state :renderer (fn [_ _ _ n]
                                   (renderer (world n))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(add-watch flap-state :history (fn [_ _ prev new]
+                                 (when (not= prev new)
+                                   (swap! state-history conj new))))
 
 (reset! flap-state @flap-state)
