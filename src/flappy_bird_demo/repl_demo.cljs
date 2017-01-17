@@ -2,6 +2,8 @@
   (:require ))
 
 (comment
+  (println "hello utrechtjs")
+
   (def body (aget js/document "body"))
 
   (def an-animal (.createElement js/document "div"))
@@ -10,5 +12,7 @@
 
 
   (.appendChild body an-animal)
+
+  ;;:Piggieback (figwheel-sidecar.repl-api/repl-env)
 
   )

@@ -23,7 +23,7 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 158) ;; 158
+(def pillar-gap 250) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
 
@@ -91,8 +91,10 @@
 
 (defn calc-pillars-gap [pillars]
   (map #(assoc % :gap-top
-               (+ 60
-                  (floor (* (:gap-multiplier %) (- bottom-y 120 pillar-gap)))))
+               (max 0
+                    (+ 60
+                       (floor (* (:gap-multiplier %)
+                                 (- bottom-y 120 pillar-gap))))))
        pillars))
 
 (defn calc-pillars-pos [time-delta pillars]
