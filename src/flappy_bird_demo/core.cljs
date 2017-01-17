@@ -244,9 +244,14 @@
   (case (.-key event)
     " " (do
           (.preventDefault event)
-          (if (:timer-running @flap-state)
-            (swap! flap-state jump)
-            (start-game)))
+          (cond (:paused? @flap-state) (toggle-pause)
+                (:timer-running @flap-state) (swap! flap-state jump)
+                :else (start-game)))
+
+
+          ;(if (:timer-running @flap-state)
+            ;(swap! flap-state jump)
+            ;(start-game)))
     "p" (toggle-pause)
     nil))
 
