@@ -23,11 +23,11 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 300) ;; 158
+(def pillar-gap 200) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
 
-(def flap-ampl 30)
+(def flap-ampl 15)
 (def flap-period 300)
 
 (def starting-state { 
@@ -299,27 +299,6 @@
 
 (add-watch flap-state :renderer (fn [_ _ _ n]
                                   (renderer (world n))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 (add-watch flap-state :history (fn [_ _ prev new]
                                  (when (not= prev new)
