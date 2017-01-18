@@ -1,6 +1,4 @@
-(ns flappy-bird-demo.core
-  (:require
-   [cljsjs.react]
+(ns flappy-bird-demo.core (:require [cljsjs.react]
    [cljsjs.react.dom]
    [sablono.core :as sab :include-macros true]
    [cljs.core.async :refer [<! chan sliding-buffer put! close! timeout]])
@@ -23,7 +21,7 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 200) ;; 158
+(def pillar-gap 158) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
 
@@ -31,6 +29,10 @@
 (def flap-period 300)
 
 (def pillars-enabled? false)
+(def collision-enabled? false)
+
+(defn calc-flappy-y [time current-y]
+  start-y)
 
 (def starting-state { 
                      :initialized? true
@@ -86,7 +88,7 @@
 
 (defn collision? [{:keys [pillar-list flappy-y] :as st}]
   (if (or (bottom-collision? st)
-          (when pillars-enabled?
+          (when (and pillars-enabled? collision-enabled?)
             (some #(collision-with-pillar? % flappy-y) pillar-list)))
     (assoc st :timer-running false)
     st))
@@ -136,15 +138,15 @@
     (+ start-y (* flap-ampl (.sin js/Math (/ (:time-delta st) flap-period))))))
 
 (defn update-flappy [{:keys [time-delta initial-vel flappy-y jump-count] :as st}]
-  (if (pos? jump-count)
-    (let [cur-vel (- initial-vel (* time-delta gravity))
-          new-y   (- flappy-y cur-vel)
-          new-y   (if (> new-y (- bottom-y flappy-height))
-                    (- bottom-y flappy-height)
-                    new-y)]
-      (assoc st
-        :flappy-y new-y))
-    (sine-wave st)))
+  (assoc st :flappy-y
+         (if (pos? jump-count)
+           (let [cur-vel (- initial-vel (* time-delta gravity))
+                 new-y   (- flappy-y cur-vel)
+                 new-y   (if (> new-y (- bottom-y flappy-height))
+                           (- bottom-y flappy-height)
+                           new-y)]
+             new-y)
+           (calc-flappy-y time-delta flappy-y))))
 
 (defn score [{:keys [cur-time start-time] :as st}]
   (if-not pillars-enabled?
