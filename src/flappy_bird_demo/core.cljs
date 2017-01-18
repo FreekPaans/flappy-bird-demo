@@ -86,7 +86,8 @@
 
 (defn collision? [{:keys [pillar-list flappy-y] :as st}]
   (if (or (bottom-collision? st)
-          (some #(collision-with-pillar? % flappy-y) pillar-list))
+          (when pillars-enabled?
+            (some #(collision-with-pillar? % flappy-y) pillar-list)))
     (assoc st :timer-running false)
     st))
 
@@ -146,10 +147,12 @@
     (sine-wave st)))
 
 (defn score [{:keys [cur-time start-time] :as st}]
-  (let [score (- (.abs js/Math (floor (/ (- (* (- cur-time start-time) horiz-vel) 544)
-                               pillar-spacing)))
-                 4)]
-  (assoc st :score (if (neg? score) 0 score))))
+  (if-not pillars-enabled?
+    st
+    (let [score (- (.abs js/Math (floor (/ (- (* (- cur-time start-time) horiz-vel) 544)
+                                           pillar-spacing)))
+                   4)]
+      (assoc st :score (if (neg? score) 0 score)))))
 
 (defn time-update [timestamp state]
   (-> state
@@ -242,7 +245,8 @@
                [:a.start-button {:onClick #(start-game)}
                 (if (< 1 jump-count) "RESTART" "START")]
                [:span])
-             [:div (map pillar pillar-list)]
+             (when pillars-enabled?
+               [:div (map pillar pillar-list)])
              [:div.flappy {:style {:top (px flappy-y)}}]
              [:div.scrolling-border {:style { :background-position-x (px border-pos)}}]
              (when show-time-travel?
