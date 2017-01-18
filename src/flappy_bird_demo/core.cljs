@@ -30,6 +30,8 @@
 (def flap-ampl 15)
 (def flap-period 300)
 
+(def pillars-enabled? false)
+
 (def starting-state { 
                      :initialized? true
                       :timer-running false
@@ -69,7 +71,7 @@
            cur-x)
        (< flappy-x (+ cur-x pillar-width))))
 
-(defn in-pillar-gap? [{:keys [flappy-y]} {:keys [gap-top]}]
+(defn in-pillar-gap? [flappy-y {:keys [gap-top]}]
   (and (< gap-top flappy-y)
        (> (+ gap-top pillar-gap)
           (+ flappy-y flappy-height))))
@@ -77,10 +79,14 @@
 (defn bottom-collision? [{:keys [flappy-y]}]
   (>= flappy-y (- bottom-y flappy-height)))
 
-(defn collision? [{:keys [pillar-list] :as st}]
-  (if (some #(or (and (in-pillar? %)
-                      (not (in-pillar-gap? st %)))
-                 (bottom-collision? st)) pillar-list)
+(defn collision-with-pillar? [pillar flappy-y]
+  (and (in-pillar? pillar)
+       (not (in-pillar-gap? flappy-y pillar))))
+
+
+(defn collision? [{:keys [pillar-list flappy-y] :as st}]
+  (if (or (bottom-collision? st)
+          (some #(collision-with-pillar? % flappy-y) pillar-list))
     (assoc st :timer-running false)
     st))
 
