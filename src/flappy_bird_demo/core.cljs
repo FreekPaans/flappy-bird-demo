@@ -28,7 +28,7 @@
 (def flap-ampl 15)
 (def flap-period 300)
 
-(def pillars-enabled? false)
+(def pillars-enabled? true)
 (def collision-enabled? false)
 
 (defn calc-flappy-y [time current-y]
