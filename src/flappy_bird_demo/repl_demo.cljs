@@ -11,5 +11,6 @@
   (.appendChild (.-body js/document) an-animal)
 
   ;;:Piggieback (figwheel-sidecar.repl-api/repl-env)
+  ;let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files']
 
   )

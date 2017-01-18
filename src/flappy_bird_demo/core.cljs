@@ -21,7 +21,7 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 158) ;; 158
+(def pillar-gap 250) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
 
@@ -29,7 +29,7 @@
 (def flap-period 300)
 
 (def pillars-enabled? true)
-(def collision-enabled? false)
+(def collision-enabled? true)
 
 (defn calc-flappy-y [time current-y]
   start-y)
