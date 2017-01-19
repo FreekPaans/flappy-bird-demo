@@ -32,7 +32,7 @@
 (def collision-enabled? true)
 
 (defn calc-flappy-y [time current-y]
-  start-y)
+  (+ start-y (* (mod time 1000) 0.05)))
 
 (def starting-state { 
                      :initialized? true
