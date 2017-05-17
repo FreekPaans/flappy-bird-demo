@@ -21,18 +21,58 @@
 (def flappy-width 57)
 (def flappy-height 41)
 (def pillar-spacing 324)
-(def pillar-gap 250) ;; 158
 (def pillar-width 86)
 (def pillar-offset-x 900)
 
 (def flap-ampl 15)
 (def flap-period 300)
 
-(def pillars-enabled? true)
-(def collision-enabled? true)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(def pillar-gap 250) ;; 158
+(def pillars-enabled? false)
+(def collision-enabled? false)
 
 (defn calc-flappy-y [time current-y]
   (+ start-y (* (mod time 1000) 0.05)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 (def starting-state { 
                      :initialized? true
